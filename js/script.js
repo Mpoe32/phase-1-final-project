@@ -46,6 +46,18 @@ function deleteReview(id) {
         .then(() => fetchReviews());
     }
     
+    //function to update a review
+    function updateReview(id) {
+    const newReviewText = prompt("Enter new review:");
+    if (newReviewText) {
+        fetch(`http://localhost:3000/reviews/${id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ review: newReviewText })
+        })
+        .then(() => fetchReviews());
+    }
+    }
     
 
 
