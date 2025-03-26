@@ -10,7 +10,7 @@ function fetchReviews() {
         .then(data => {
             document.getElementById("reviews").innerHTML = "";
             data.forEach(review => {
-                const div = document.createElement("div");
+                const div = document.createElement("div");// loop through each review and create a div element to display
                 div.innerHTML = `
                     <h3>${review.title} by ${review.author}</h3>
                     <p>${review.review}</p>
@@ -18,12 +18,31 @@ function fetchReviews() {
                     <button onclick="deleteReview(${review.id})">Delete</button>
                     <button onclick="updateReview(${review.id})">Edit</button>
                 `;
-                document.getElementById("reviews").appendChild(div);
+                document.getElementById("reviews").appendChild(div);// append the newly created review element to the review section
             });
         });
 }
-        
+//functiion to add a new review when the form is submitted
+function addReview(event) {
+    event.preventDefault();//prevent default form submission
+    const newReview = {
+        title:document.getElementById("title").value,
+        author:document.getElementById("author").value,
+        review:document.getElementById("review").value,
+        rating:document.getElementById("rating").value,
+    }
+}
+ //send a post request to to add the new review to the server
+ fetch("http://localhost:3000/reviews", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(newReview)
+})
+.then(() => fetchReviews());
+
+
     
 
 
 
+ 
