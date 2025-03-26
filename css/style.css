@@ -1,8 +1,31 @@
 
 body {
-text-align: center;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    height: 20vh;
+    margin: 0;
 }
 
 form {
-margin-bottom: 25px;
+    padding: 10px;
+    border-radius: 10%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 10;
+}
+input, textarea {
+    display: block;
+    margin: 10px auto;
+    padding: 10px;
+    width: 20%;
+    background-color: aquamarine;
+}
+button{
+    background-color:powderblue;
+    width: 10%;
+    margin: 10px;
+    display: block;   
+    
 }
