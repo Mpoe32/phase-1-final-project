@@ -32,13 +32,21 @@ function addReview(event) {
         rating:document.getElementById("rating").value,
     }
 }
- //send a post request to to add the new review to the server
+ //send a post request to add the new review to the server
  fetch("http://localhost:3000/reviews", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(newReview)
 })
 .then(() => fetchReviews());
+
+//functiion to delete a review
+function deleteReview(id) {
+    fetch(`http://localhost:3000/reviews/${id}`, { method: "DELETE" })
+        .then(() => fetchReviews());
+    }
+    
+    
 
 
     
