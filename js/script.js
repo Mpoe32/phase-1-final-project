@@ -1,61 +1,27 @@
-/**
- * Book Review Application
- * 
- * This script handles all CRUD operations for the book review app:
- * - Fetching and displaying existing reviews
- * - Adding new reviews
- * - Deleting reviews
- * - Updating reviews
- */
-
-// Wait for DOM to be fully loaded before executing scripts
 document.addEventListener("DOMContentLoaded", () => {
     fetchReviews();
     
-    // Add event listener for form submission
     const form = document.getElementById("reviewForm");
     form.addEventListener("submit", addReview);
 });
 
-/**
- * Fetches all reviews from the server and displays them
- * @returns {Promise<void>}
- */
 function fetchReviews() {
-    fetch("http://localhost:3000/reviews")
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Network response was not ok");
-            }
-            return response.json();
-        })
-        .then(data => {
-            const reviewsContainer = document.getElementById("reviews");
-            reviewsContainer.innerHTML = ""; // Clear existing reviews
-            
-            if (data.length === 0) {
-                reviewsContainer.innerHTML = "<p>No reviews yet. Be the first to add one!</p>";
-                return;
-            }
-            
-            // Create and end each review element
-            data.forEach(review => {
-                const reviewElement = createReviewElement(review);
-                reviewsContainer.appendChild(reviewElement);
-            });
-        })
-        .catch(error => {
-            console.error("Error fetching reviews:", error);
-            document.getElementById("reviews").innerHTML = 
-                "<p>Error loading reviews. Please try again later.</p>";
-        });
+    
+    const reviews = JSON.parse(localStorage.getItem('reviews')) || [];
+    const reviewsContainer = document.getElementById("reviews");
+    reviewsContainer.innerHTML = ""; 
+    
+    if (reviews.length === 0) {
+        reviewsContainer.innerHTML = "<p>No reviews yet. Be the first to add one!</p>";
+        return;
+    }
+    
+    reviews.forEach(review => {
+        const reviewElement = createReviewElement(review);
+        reviewsContainer.appendChild(reviewElement);
+    });
 }
 
-/**
- * Creates a DOM element for a single review
- * @param {Object} review - The review object
- * @returns {HTMLElement} The created review element
- */
 function createReviewElement(review) {
     const div = document.createElement("div");
     div.className = "review-item";
@@ -63,31 +29,27 @@ function createReviewElement(review) {
     div.innerHTML = `
         <h3>${review.title} by ${review.author}</h3>
         <p>${review.review}</p>
-        <p class="rating">Rating: ${review.rating}/5</p>
+        <p class="rating">Rating: ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</p>
         <div class="review-actions">
-            <button onclick="updateReview(${review.id})">Edit</button>
-            <button onclick="deleteReview(${review.id})">Delete</button>
+            <button onclick="updateReview('${review.id}')">Edit</button>
+            <button onclick="deleteReview('${review.id}')">Delete</button>
         </div>
     `;
     
     return div;
 }
 
-/**
- * Handles form submission to add a new review
- * @param {Event} event - The form submission event
- */
 function addReview(event) {
     event.preventDefault();
     
     const newReview = {
+        id: Date.now().toString(), 
         title: document.getElementById("title").value.trim(),
         author: document.getElementById("author").value.trim(),
         review: document.getElementById("review").value.trim(),
         rating: parseInt(document.getElementById("rating").value),
     };
     
-    // Basic validation
     if (!newReview.title || !newReview.author || !newReview.review) {
         alert("Please fill in all fields");
         return;
@@ -98,80 +60,44 @@ function addReview(event) {
         return;
     }
     
-    // Send POST request to add new review
-    fetch("http://localhost:3000/reviews", {
-        method: "POST",
-        headers: { 
-            "Content-Type": "application/json" 
-        },
-        body: JSON.stringify(newReview)
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error("Failed to add review");
-        }
-        return response.json();
-    })
-    .then(() => {
-        fetchReviews(); // Refresh the reviews list
-        document.getElementById("reviewForm").reset(); // Clear the form
-    })
-    .catch(error => {
-        console.error("Error adding review:", error);
-        alert("Error adding review. Please try again.");
-    });
+    
+    const reviews = JSON.parse(localStorage.getItem('reviews')) || [];
+    reviews.push(newReview);
+    localStorage.setItem('reviews', JSON.stringify(reviews));
+    
+    fetchReviews();
+    document.getElementById("reviewForm").reset();
 }
-
-/**
- * Deletes a review from the server
- * @param {number} id - The ID of the review to delete
- */
+ 
 function deleteReview(id) {
     if (!confirm("Are you sure you want to delete this review?")) {
         return;
     }
     
-    fetch(`http://localhost:3000/reviews/${id}`, { 
-        method: "DELETE" 
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error("Failed to delete review");
-        }
-        fetchReviews(); // Refresh the reviews list
-    })
-    .catch(error => {
-        console.error("Error deleting review:", error);
-        alert("Error deleting review. Please try again.");
-    });
+    const reviews = JSON.parse(localStorage.getItem('reviews')) || [];
+    const updatedReviews = reviews.filter(review => review.id !== id);
+    localStorage.setItem('reviews', JSON.stringify(updatedReviews));
+    fetchReviews();
 }
 
-/**
- * Updates an existing review
- * @param {number} id - The ID of the review to update
- */
 function updateReview(id) {
-    const newReviewText = prompt("Enter your updated review:");
+    const reviews = JSON.parse(localStorage.getItem('reviews')) || [];
+    const reviewToUpdate = reviews.find(review => review.id === id);
     
-    if (newReviewText && newReviewText.trim() !== "") {
-        fetch(`http://localhost:3000/reviews/${id}`, {
-            method: "PATCH",
-            headers: { 
-                "Content-Type": "application/json" 
-            },
-            body: JSON.stringify({ 
-                review: newReviewText.trim() 
-            })
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Failed to update review");
-            }
-            fetchReviews(); // Refresh the reviews list
-        })
-        .catch(error => {
-            console.error("Error updating review:", error);
-            alert("Error updating review. Please try again.");
-        });
+    if (!reviewToUpdate) return;
+    
+    const newTitle = prompt("Update book title:", reviewToUpdate.title);
+    const newAuthor = prompt("Update author:", reviewToUpdate.author);
+    const newReviewText = prompt("Update your review:", reviewToUpdate.review);
+    const newRating = prompt("Update rating (1-5):", reviewToUpdate.rating);
+    
+    if (newTitle && newAuthor && newReviewText && newRating) {
+        reviewToUpdate.title = newTitle.trim();
+        reviewToUpdate.author = newAuthor.trim();
+        reviewToUpdate.review = newReviewText.trim();
+        reviewToUpdate.rating = Math.min(5, Math.max(1, parseInt(newRating) || reviewToUpdate.rating));
+        
+        localStorage.setItem('reviews', JSON.stringify(reviews));
+        fetchReviews();
     }
 }
