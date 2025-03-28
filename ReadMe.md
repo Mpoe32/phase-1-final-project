@@ -54,6 +54,7 @@ Installation & Setup
 1. Clone the Repository
 
 git clone https://github.com/your-username/book-review-app.git
+https://vercel.com/mpoe32s-projects/phase-1-final-project/3Dv9auuQjKbTeUofXKxjPYn4DA3n
 cd book-review-app
 
 2. Install JSON Server
